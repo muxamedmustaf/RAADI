@@ -34,7 +34,7 @@
 
         <div class="form-group">
           <label for="title">عنوان الإعلان</label>
-          <input id="title" type="text" required>
+          <input id="title" type="text" required placeholder="مثال: هاتف سامسونج A50">
         </div>
 
         <div class="form-group">
@@ -50,35 +50,43 @@
 
         <div class="form-group">
           <label for="price">السعر بالدولار</label>
-          <input id="price" type="number" min="0" step="0.01" required>
+          <input id="price" type="number" min="0" step="0.01" required placeholder="مثال: 150">
         </div>
 
         <div class="form-group">
           <label for="city">المدينة أو المنطقة</label>
-          <input id="city" type="text" required>
+          <input id="city" type="text" required placeholder="مثال: مقديشو">
         </div>
 
         <div class="form-group">
           <label for="seller_name">اسم البائع</label>
-          <input id="seller_name" type="text" required>
+          <input id="seller_name" type="text" required placeholder="اسمك الكامل">
         </div>
 
         <div class="form-group">
           <label for="description">تفاصيل الإعلان</label>
-          <textarea id="description" rows="5" required></textarea>
+          <textarea id="description" rows="5" required placeholder="اكتب تفاصيل السلعة أو الأرض هنا..."></textarea>
         </div>
 
         <div class="form-group">
           <label for="phone">رقم واتساب</label>
-          <input id="phone" type="tel" required>
+          <input id="phone" type="tel" required placeholder="مثال: 252612345678" dir="ltr">
+        </div>
+
+        <!-- إضافة حقل الصورة هنا -->
+        <div class="form-group">
+          <label for="image">صورة الإعلان (اختياري)</label>
+          <input id="image" type="file" accept="image/*">
+          <div class="image-preview-container">
+            <img id="image-preview" alt="معاينة الصورة" hidden>
+          </div>
         </div>
 
         <button type="submit" class="primary-button">
           إرسال الإعلان للمراجعة
         </button>
 
-        <p id="form-message" class="form-message"
-           aria-live="polite"></p>
+        <p id="form-message" class="form-message" aria-live="polite"></p>
 
       </form>
     </section>

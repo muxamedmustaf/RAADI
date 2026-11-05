@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f766e">
-  <meta name="description" content="رَادي RAADI - منصة الإعلانات والأجهزة المستعملة والأراضي في الصومال.">
+  <meta name="description" content="رَادي RAADI - منصة الإعلانات المحلية في الصومال.">
   <title>RAADI | رَادي</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -16,7 +16,8 @@
     <nav>
       <a href="#categories">التصنيفات</a>
       <a href="#listings">الإعلانات</a>
-      <a href="#about">عن المنصة</a>
+      <a href="#fees">خدمة المنصة</a>
+      <a href="#support">المساعدة</a>
     </nav>
 
     <a href="add-listing.html" class="header-button">أضف إعلانك</a>
@@ -26,12 +27,10 @@
     <section class="hero">
       <div class="hero-content">
         <span class="eyebrow">سوقك المحلي في الصومال</span>
-
         <h1>ابحث عما تريد،<br>واعرض ما تبيع</h1>
-
         <p>
           منصة رَادي تجمع البائعين والمشترين في مكان واحد.
-          اعثر على الأجهزة والأراضي المعروضة للبيع بالقرب منك.
+          ابحث عن الأجهزة والأراضي والسلع المعروضة للبيع.
         </p>
 
         <div class="hero-actions">
@@ -43,13 +42,13 @@
       <div class="hero-visual">
         <div class="visual-card">
           <div class="visual-icon">📱</div>
-          <strong>أجهزتك المستعملة</strong>
-          <span>اعرضها بسهولة</span>
+          <strong>الأجهزة والسلع</strong>
+          <span>اعرض ما تريد بيعه</span>
         </div>
 
         <div class="visual-card">
           <div class="visual-icon">🏡</div>
-          <strong>أراضٍ للبيع</strong>
+          <strong>الأراضي والعقارات</strong>
           <span>ابحث حسب الموقع</span>
         </div>
       </div>
@@ -95,28 +94,87 @@
       <div class="section-heading">
         <div>
           <span class="eyebrow">من السوق المحلي</span>
-          <h2>أحدث الإعلانات</h2>
+          <h2>الإعلانات</h2>
         </div>
-        <span class="coming-soon">قريبًا</span>
       </div>
 
-      <div class="empty-state">
+      <form id="listing-search" class="listing-search">
+        <div class="form-group">
+          <label for="search-name">ما الذي تبحث عنه؟</label>
+          <input
+            id="search-name"
+            type="search"
+            placeholder="مثال: هاتف سامسونج أو أرض"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="search-city">المدينة أو المنطقة</label>
+          <input
+            id="search-city"
+            type="text"
+            placeholder="اكتب المدينة أو المنطقة"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="listing-sort">ترتيب الإعلانات</label>
+          <select id="listing-sort">
+            <option value="newest">الأحدث أولًا</option>
+            <option value="price-asc">السعر: من الأقل إلى الأعلى</option>
+            <option value="price-desc">السعر: من الأعلى إلى الأقل</option>
+            <option value="nearest">الأقرب إليّ</option>
+          </select>
+        </div>
+
+        <button type="submit" class="primary-button">ابحث</button>
+        <button type="button" id="clear-search" class="secondary-button">
+          مسح البحث
+        </button>
+        <p id="search-message" aria-live="polite"></p>
+      </form>
+
+      <div id="listings-grid" class="listings-grid"></div>
+
+      <div id="listings-empty" class="empty-state">
         <div>🔎</div>
-        <h3>الإعلانات ستظهر هنا</h3>
-        <p>
-          سنضيف نظام الإعلانات والبحث في الخطوات التالية.
-        </p>
+        <h3>لا توجد إعلانات للعرض حاليًا</h3>
+        <p>جرّب تغيير كلمات البحث أو المدينة.</p>
       </div>
     </section>
 
-    <section id="add-listing" class="callout">
-      <div>
-        <span class="eyebrow">هل لديك شيء للبيع؟</span>
-        <h2>اعرض إعلانك على رَادي</h2>
-        <p>ابدأ بالوصول إلى المشترين في منطقتك.</p>
+    <section id="fees" class="section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">خدمة المنصة</span>
+          <h2>رسوم نشر الإعلان</h2>
+        </div>
+      </div>
+      <p>
+        ستظهر هنا تفاصيل رسوم نشر الإعلان وطريقة دفعها قبل تفعيل نظام الدفع.
+      </p>
+    </section>
+
+    <section id="support" class="section support-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">نحن هنا للمساعدة</span>
+          <h2>التواصل والدعم</h2>
+        </div>
       </div>
 
-      <a href="add-listing.html" class="primary-button">أضف إعلانك الآن</a>
+      <p>
+        إذا واجهتك مشكلة في إضافة إعلان أو استخدام المنصة، تواصل مع دعم رَادي عبر واتساب.
+      </p>
+
+      <a
+        class="primary-button"
+        href="https://wa.me/252907941910"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        تواصل مع الدعم عبر واتساب
+      </a>
     </section>
 
     <section id="about" class="section about-section">
@@ -135,8 +193,8 @@
     <small>© 2026 RAADI</small>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="supabase.js" defer></script>
-  <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

@@ -1,5 +1,3 @@
-
-
 :root {
   --primary: #0f766e;
   --primary-dark: #115e59;
@@ -9,6 +7,7 @@
   --muted: #64748b;
   --border: #e2e8f0;
   --accent: #ccfbf1;
+  --whatsapp: #25d366;
 }
 
 * {
@@ -242,17 +241,150 @@ a {
   font-size: 12px;
 }
 
+/* ====== تنسيقات قسم الإعلانات والبحث ====== */
 .listings-section {
   background: white;
 }
 
-.coming-soon {
-  padding: 6px 14px;
-  background: var(--accent);
-  color: var(--primary-dark);
+.listing-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
+  background: var(--background);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-bottom: 30px;
+}
+
+.listing-search .form-group {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 0;
+}
+
+.listing-search label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: var(--text);
+}
+
+.listing-search input,
+.listing-search select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+#search-message {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 25px;
+}
+
+.listing-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.listing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+}
+
+.listing-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #e2e8f0;
+}
+
+.listing-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sold-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ef4444;
+  color: white;
+  padding: 5px 12px;
   border-radius: 20px;
   font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.listing-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.listing-title {
+  font-size: 17px;
   font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.listing-price {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.listing-location,
+.listing-date {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.whatsapp-btn {
+  display: block;
+  text-align: center;
+  background: var(--whatsapp);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-top: auto;
+  transition: 0.2s;
+}
+
+.whatsapp-btn:hover {
+  background: #1eb857;
+}
+
+.whatsapp-btn.disabled {
+  background: #94a3b8;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 .empty-state {
@@ -266,6 +398,7 @@ a {
   border: 1px dashed #cbd5e1;
   border-radius: 18px;
   text-align: center;
+  width: 100%;
 }
 
 .empty-state > div {
@@ -283,6 +416,7 @@ a {
   font-size: 14px;
 }
 
+/* ====== Footer & About ====== */
 .callout {
   display: flex;
   align-items: center;
@@ -325,6 +459,7 @@ a {
   font-size: 12px;
 }
 
+/* ====== التجاوب مع الهاتف ====== */
 @media (max-width: 900px) {
   .site-header {
     flex-wrap: wrap;
@@ -446,5 +581,9 @@ a {
     flex-direction: column;
     align-items: flex-start;
     padding: 25px 6%;
+  }
+  
+  .listing-search {
+    padding: 15px;
   }
 }

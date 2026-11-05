@@ -1,161 +1,163 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const listingsGrid = document.querySelector("#listings-grid");
-  const emptyState = document.querySelector("#listings-empty");
-  const searchForm = document.querySelector("#listing-search");
-  const searchName = document.querySelector("#search-name");
-  const searchCity = document.querySelector("#search-city");
-  const sortSelect = document.querySelector("#listing-sort");
-  const searchMessage = document.querySelector("#search-message");
-  const clearBtn = document.querySelector("#clear-search");
+  const form = document.querySelector("#listing-form");
+  const message = document.querySelector("#form-message");
+  const imageInput = document.querySelector("#image");
+  const imagePreview = document.querySelector("#image-preview");
 
-  if (!listingsGrid) return;
+  if (!form || !message) return;
 
-  let allListings = [];
+  // 1. معاينة الصورة قبل الرفع
+  if (imageInput && imagePreview) {
+    imageInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // التحقق من أن الملف صورة
+        if (!file.type.startsWith("image/")) {
+          message.textContent = "يرجى اختيار ملف صورة صحيح.";
+          message.className = "form-message error";
+          imageInput.value = "";
+          imagePreview.hidden = true;
+          return;
+        }
 
-  // دالة لجلب البيانات من Supabase
-  async function fetchListings() {
-    listingsGrid.innerHTML = "<p style='text-align:center; width:100%;'>جارٍ تحميل الإعلانات...</p>";
-    
-    // جلب الإعلانات المعتمدة أو المباعة فقط
-    const { data, error } = await raadiDB
-      .from("listings")
-      .select("*")
-      .in("status", ["approved", "sold"])
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("خطأ في جلب الإعلانات:", error);
-      listingsGrid.innerHTML = "<p style='text-align:center; color:red; width:100%;'>حدث خطأ أثناء تحميل الإعلانات.</p>";
-      return;
-    }
-
-    allListings = data || [];
-    applyFiltersAndSort();
-  }
-
-  // دالة لتصفية وترتيب الإعلانات
-  async function applyFiltersAndSort() {
-    const nameQuery = searchName.value.trim().toLowerCase();
-    const cityQuery = searchCity.value.trim().toLowerCase();
-    const sortValue = sortSelect.value;
-
-    // 1. التصفية (البحث)
-    let filtered = allListings.filter(item => {
-      const matchName = !nameQuery || item.title.toLowerCase().includes(nameQuery) || (item.description && item.description.toLowerCase().includes(nameQuery));
-      const matchCity = !cityQuery || (item.location && item.location.toLowerCase().includes(cityQuery));
-      return matchName && matchCity;
-    });
-
-    // 2. الترتيب
-    if (sortValue === "price-asc") {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (sortValue === "price-desc") {
-      filtered.sort((a, b) => b.price - a.price);
-    } else if (sortValue === "newest") {
-      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else if (sortValue === "nearest") {
-      // الترتيب حسب الأقرب (يتطلب موافقة المستخدم على الموقع)
-      if ("geolocation" in navigator) {
-        searchMessage.textContent = "جارٍ تحديد موقعك للترتيب...";
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userLat = position.coords.latitude;
-            const userLng = position.coords.longitude;
-            
-            filtered.sort((a, b) => {
-              const distA = getDistance(userLat, userLng, a.latitude, a.longitude);
-              const distB = getDistance(userLat, userLng, b.latitude, b.longitude);
-              return (distA || 99999) - (distB || 99999);
-            });
-            searchMessage.textContent = "";
-            renderListings(filtered);
-          },
-          (error) => {
-            searchMessage.textContent = "تعذر تحديد موقعك. تم الترتيب حسب الأحدث.";
-            filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            renderListings(filtered);
-          }
-        );
-        return; // ننتظر جلب الموقع قبل العرض
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          imagePreview.src = event.target.result;
+          imagePreview.hidden = false;
+        };
+        reader.readAsDataURL(file);
+        message.className = "form-message";
+        message.textContent = "";
       } else {
-        searchMessage.textContent = "متصفحك لا يدعم تحديد الموقع.";
+        imagePreview.src = "";
+        imagePreview.hidden = true;
       }
-    }
-
-    searchMessage.textContent = "";
-    renderListings(filtered);
-  }
-
-  // دالة حساب المسافة بين نقطتين (Haversine formula)
-  function getDistance(lat1, lon1, lat2, lon2) {
-    if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-    const R = 6371; // نصف قطر الأرض بالكيلومتر
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }
-
-  // دالة عرض البطاقات في الصفحة
-  function renderListings(listings) {
-    listingsGrid.innerHTML = "";
-
-    if (listings.length === 0) {
-      emptyState.style.display = "flex";
-      return;
-    }
-
-    emptyState.style.display = "none";
-
-    listings.forEach(item => {
-      const isSold = item.status === "sold";
-      const imageSrc = item.image_url || "https://via.placeholder.com/300x200?text=No+Image";
-      const dateStr = new Date(item.created_at).toLocaleDateString("ar-EG");
-      
-      const card = document.createElement("div");
-      card.className = "listing-card";
-      
-      card.innerHTML = `
-        <div class="listing-image-wrapper">
-          <img src="${imageSrc}" alt="${item.title}" class="listing-image" loading="lazy">
-          ${isSold ? '<div class="sold-badge">مباع</div>' : ''}
-        </div>
-        <div class="listing-content">
-          <h3 class="listing-title">${item.title}</h3>
-          <p class="listing-price">$${item.price}</p>
-          <p class="listing-location">📍 ${item.location}</p>
-          <p class="listing-date">📅 ${dateStr}</p>
-          <a href="https://wa.me/${item.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${item.title}" 
-             target="_blank" class="whatsapp-btn ${isSold ? 'disabled' : ''}">
-            ${isSold ? 'تم البيع' : 'تواصل عبر واتساب'}
-          </a>
-        </div>
-      `;
-      
-      listingsGrid.appendChild(card);
     });
   }
 
-  // ربط الأحداث (Events)
-  searchForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    applyFiltersAndSort();
-  });
+  // دالة لضغط وتصغير الصورة تلقائياً
+  async function compressImage(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
 
-  sortSelect.addEventListener("change", () => {
-    applyFiltersAndSort();
-  });
+          // الحد الأقصى للأبعاد (800 بكسل)
+          const MAX_SIZE = 800;
 
-  clearBtn.addEventListener("click", () => {
-    searchForm.reset();
-    applyFiltersAndSort();
-  });
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
 
-  // بدء الجلب عند تحميل الصفحة
-  fetchListings();
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // تحويل الصورة إلى JPG لتقليل الحجم
+          canvas.toBlob((blob) => {
+            // تحويل الـ Blob إلى File
+            const newFile = new File([blob], "compressed_image.jpg", {
+              type: "image/jpeg",
+              lastModified: Date.now()
+            });
+            resolve(newFile);
+          }, "image/jpeg", 0.8); // جودة 80%
+        };
+      };
+    });
+  }
+
+  // 2. إرسال النموذج ورفع الصورة
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (!form.reportValidity()) return;
+
+    const button = form.querySelector('button[type="submit"]');
+    const originalText = button.textContent;
+    
+    button.disabled = true;
+    button.textContent = "جارٍ معالجة الصورة والإرسال...";
+    message.className = "form-message";
+    message.textContent = "";
+
+    try {
+      let imageUrl = null;
+
+      // أ. رفع الصورة إن وجدت
+      const file = imageInput.files[0];
+      if (file) {
+        // ضغط الصورة قبل الرفع
+        const compressedFile = await compressImage(file);
+        
+        // إنشاء اسم فريد
+        const fileName = `img_${Date.now()}.jpg`;
+
+        const { error: uploadError } = await raadiDB.storage
+          .from("listing-images")
+          .upload(fileName, compressedFile);
+
+        if (uploadError) throw uploadError;
+
+        // الحصول على الرابط العام
+        const { data: urlData } = raadiDB.storage
+          .from("listing-images")
+          .getPublicUrl(fileName);
+
+        imageUrl = urlData.publicUrl;
+      }
+
+      // ب. تجهيز بيانات الإعلان
+      const listing = {
+        title: document.querySelector("#title").value.trim(),
+        category: document.querySelector("#category").value,
+        price: Number(document.querySelector("#price").value),
+        location: document.querySelector("#city").value.trim(),
+        seller_name: document.querySelector("#seller_name").value.trim(),
+        description: document.querySelector("#description").value.trim(),
+        whatsapp: document.querySelector("#phone").value.trim(),
+        image_url: imageUrl,
+        status: "pending"
+      };
+
+      // ج. إدخال البيانات
+      const { error: dbError } = await raadiDB
+        .from("listings")
+        .insert([listing]);
+
+      if (dbError) throw dbError;
+
+      // د. النجاح
+      message.textContent = "تم إرسال إعلانك بنجاح! الإعلان ينتظر موافقة الإدارة.";
+      message.classList.add("success");
+      
+      form.reset();
+      if (imagePreview) imagePreview.hidden = true;
+
+    } catch (error) {
+      console.error("RAADI listing error:", error);
+      message.textContent = "تعذر إرسال الإعلان: " + (error.message || "يرجى المحاولة مرة أخرى.");
+      message.classList.add("error");
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  });
 });

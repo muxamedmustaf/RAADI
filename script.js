@@ -1,163 +1,118 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector("#listing-form");
-  const message = document.querySelector("#form-message");
-  const imageInput = document.querySelector("#image");
-  const imagePreview = document.querySelector("#image-preview");
+  const listingsGrid = document.querySelector("#listings-grid");
+  const emptyState = document.querySelector("#listings-empty");
+  const searchForm = document.querySelector("#listing-search");
+  const searchName = document.querySelector("#search-name");
+  const searchCity = document.querySelector("#search-city");
+  const sortSelect = document.querySelector("#listing-sort");
+  const searchMessage = document.querySelector("#search-message");
+  const clearBtn = document.querySelector("#clear-search");
 
-  if (!form || !message) return;
+  if (!listingsGrid) return;
 
-  // 1. معاينة الصورة قبل الرفع
-  if (imageInput && imagePreview) {
-    imageInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        // التحقق من أن الملف صورة
-        if (!file.type.startsWith("image/")) {
-          message.textContent = "يرجى اختيار ملف صورة صحيح.";
-          message.className = "form-message error";
-          imageInput.value = "";
-          imagePreview.hidden = true;
-          return;
-        }
+  let allListings = [];
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          imagePreview.src = event.target.result;
-          imagePreview.hidden = false;
-        };
-        reader.readAsDataURL(file);
-        message.className = "form-message";
-        message.textContent = "";
-      } else {
-        imagePreview.src = "";
-        imagePreview.hidden = true;
-      }
-    });
-  }
-
-  // دالة لضغط وتصغير الصورة تلقائياً
-  async function compressImage(file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          let width = img.width;
-          let height = img.height;
-
-          // الحد الأقصى للأبعاد (800 بكسل)
-          const MAX_SIZE = 800;
-
-          if (width > height) {
-            if (width > MAX_SIZE) {
-              height *= MAX_SIZE / width;
-              width = MAX_SIZE;
-            }
-          } else {
-            if (height > MAX_SIZE) {
-              width *= MAX_SIZE / height;
-              height = MAX_SIZE;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // تحويل الصورة إلى JPG لتقليل الحجم
-          canvas.toBlob((blob) => {
-            // تحويل الـ Blob إلى File
-            const newFile = new File([blob], "compressed_image.jpg", {
-              type: "image/jpeg",
-              lastModified: Date.now()
-            });
-            resolve(newFile);
-          }, "image/jpeg", 0.8); // جودة 80%
-        };
-      };
-    });
-  }
-
-  // 2. إرسال النموذج ورفع الصورة
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    if (!form.reportValidity()) return;
-
-    const button = form.querySelector('button[type="submit"]');
-    const originalText = button.textContent;
+  async function fetchListings() {
+    listingsGrid.innerHTML = "<p style='text-align:center; width:100%;'>جارٍ تحميل الإعلانات...</p>";
     
-    button.disabled = true;
-    button.textContent = "جارٍ معالجة الصورة والإرسال...";
-    message.className = "form-message";
-    message.textContent = "";
+    const { data, error } = await raadiDB
+      .from("listings")
+      .select("*")
+      .in("status", ["approved", "sold"])
+      .order("created_at", { ascending: false });
 
-    try {
-      let imageUrl = null;
-
-      // أ. رفع الصورة إن وجدت
-      const file = imageInput.files[0];
-      if (file) {
-        // ضغط الصورة قبل الرفع
-        const compressedFile = await compressImage(file);
-        
-        // إنشاء اسم فريد
-        const fileName = `img_${Date.now()}.jpg`;
-
-        const { error: uploadError } = await raadiDB.storage
-          .from("listing-images")
-          .upload(fileName, compressedFile);
-
-        if (uploadError) throw uploadError;
-
-        // الحصول على الرابط العام
-        const { data: urlData } = raadiDB.storage
-          .from("listing-images")
-          .getPublicUrl(fileName);
-
-        imageUrl = urlData.publicUrl;
-      }
-
-      // ب. تجهيز بيانات الإعلان
-      const listing = {
-        title: document.querySelector("#title").value.trim(),
-        category: document.querySelector("#category").value,
-        price: Number(document.querySelector("#price").value),
-        location: document.querySelector("#city").value.trim(),
-        seller_name: document.querySelector("#seller_name").value.trim(),
-        description: document.querySelector("#description").value.trim(),
-        whatsapp: document.querySelector("#phone").value.trim(),
-        image_url: imageUrl,
-        status: "pending"
-      };
-
-      // ج. إدخال البيانات
-      const { error: dbError } = await raadiDB
-        .from("listings")
-        .insert([listing]);
-
-      if (dbError) throw dbError;
-
-      // د. النجاح
-      message.textContent = "تم إرسال إعلانك بنجاح! الإعلان ينتظر موافقة الإدارة.";
-      message.classList.add("success");
-      
-      form.reset();
-      if (imagePreview) imagePreview.hidden = true;
-
-    } catch (error) {
-      console.error("RAADI listing error:", error);
-      message.textContent = "تعذر إرسال الإعلان: " + (error.message || "يرجى المحاولة مرة أخرى.");
-      message.classList.add("error");
-    } finally {
-      button.disabled = false;
-      button.textContent = originalText;
+    if (error) {
+      console.error("خطأ في جلب الإعلانات:", error);
+      // إظهار الخطأ على الشاشة لنعرف السبب
+      listingsGrid.innerHTML = `<div style='text-align:center; color:red; width:100%; padding:20px; border:1px solid red; border-radius:8px;'>
+        <b>خطأ في جلب البيانات من Supabase:</b><br>
+        ${error.message}<br>
+        <small>تأكد من أسماء الأعمدة و الصلاحيات (Policies)</small>
+      </div>`;
+      return;
     }
+
+    allListings = data || [];
+    applyFiltersAndSort();
+  }
+
+  async function applyFiltersAndSort() {
+    const nameQuery = searchName.value.trim().toLowerCase();
+    const cityQuery = searchCity.value.trim().toLowerCase();
+    const sortValue = sortSelect.value;
+
+    let filtered = allListings.filter(item => {
+      const matchName = !nameQuery || item.title.toLowerCase().includes(nameQuery) || (item.description && item.description.toLowerCase().includes(nameQuery));
+      const matchCity = !cityQuery || (item.location && item.location.toLowerCase().includes(cityQuery));
+      return matchName && matchCity;
+    });
+
+    if (sortValue === "price-asc") {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (sortValue === "price-desc") {
+      filtered.sort((a, b) => b.price - a.price);
+    } else if (sortValue === "newest") {
+      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+
+    searchMessage.textContent = "";
+    renderListings(filtered);
+  }
+
+  function renderListings(listings) {
+    listingsGrid.innerHTML = "";
+
+    if (listings.length === 0) {
+      emptyState.style.display = "flex";
+      return;
+    }
+
+    emptyState.style.display = "none";
+
+    listings.forEach(item => {
+      const isSold = item.status === "sold";
+      const imageSrc = item.image_url ? item.image_url : "https://via.placeholder.com/300x200?text=No+Image";
+      const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString("ar-EG") : "غير محدد";
+      
+      const card = document.createElement("div");
+      card.className = "listing-card";
+      
+      card.innerHTML = `
+        <div class="listing-image-wrapper">
+          <img src="${imageSrc}" alt="${item.title}" class="listing-image" loading="lazy">
+          ${isSold ? '<div class="sold-badge">مباع</div>' : ''}
+        </div>
+        <div class="listing-content">
+          <h3 class="listing-title">${item.title || 'بدون عنوان'}</h3>
+          <p class="listing-price">$${item.price || 0}</p>
+          <p class="listing-location">📍 ${item.location || 'غير محدد'}</p>
+          <p class="listing-date">📅 ${dateStr}</p>
+          <a href="https://wa.me/${item.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${item.title}" 
+             target="_blank" class="whatsapp-btn ${isSold ? 'disabled' : ''}">
+            ${isSold ? 'تم البيع' : 'تواصل عبر واتساب'}
+          </a>
+        </div>
+      `;
+      
+      listingsGrid.appendChild(card);
+    });
+  }
+
+  searchForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    applyFiltersAndSort();
   });
+
+  sortSelect.addEventListener("change", () => {
+    applyFiltersAndSort();
+  });
+
+  clearBtn.addEventListener("click", () => {
+    searchForm.reset();
+    applyFiltersAndSort();
+  });
+
+  fetchListings();
 });

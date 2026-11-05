@@ -1,83 +1,73 @@
 
-.listing-form {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 35px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px #0f172a08;
-}
+"use strict";
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("#listing-form");
+  const message = document.querySelector("#form-message");
 
-.form-group label {
-  font-size: 14px;
-  font-weight: 700;
-}
+  if (!form || !message) return;
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 14px 16px;
-  background: #f8fafc;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font: inherit;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: var(--primary);
-  background: white;
-}
+    if (!form.reportValidity()) return;
 
-.form-group textarea {
-  resize: vertical;
-  min-height: 130px;
-}
+    const button = form.querySelector('button[type="submit"]');
 
-.form-group input[type="file"] {
-  padding: 12px;
-  background: white;
-}
+    const listing = {
+      title: document.querySelector("#title").value.trim(),
+      category: document.querySelector("#category").value,
+      price: Number(document.querySelector("#price").value),
+      location: document.querySelector("#city").value.trim(),
+      seller_name: document.querySelector("#seller_name").value.trim(),
+      description: document.querySelector("#description").value.trim(),
+      whatsapp: document.querySelector("#phone").value.trim(),
+      status: "pending"
+    };
 
-.form-group small {
-  color: var(--muted);
-  font-size: 12px;
-}
+    if (
+      !listing.title ||
+      !listing.category ||
+      !listing.location ||
+      !listing.seller_name ||
+      !listing.whatsapp ||
+      !Number.isFinite(listing.price) ||
+      listing.price < 0
+    ) {
+      message.textContent = "يرجى التأكد من صحة البيانات.";
+      return;
+    }
 
-.listing-form button {
-  width: 100%;
-  border: none;
-  cursor: pointer;
-  font: inherit;
-}
+    button.disabled = true;
+    button.textContent = "جارٍ إرسال الإعلان...";
+    message.textContent = "";
 
-.form-message {
-  margin-top: 18px;
-  color: var(--primary);
-  font-size: 14px;
-  text-align: center;
-}
+    try {
+      const { error } = await raadiDB
+        .from("listings")
+        .insert([listing]);
 
-@media (max-width: 560px) {
-  .listing-form {
-    padding: 22px 16px;
-  }
+      if (error) throw error;
 
-  .form-group {
-    margin-bottom: 20px;
-  }
-}
+      message.textContent =
+        "تم إرسال إعلانك بنجاح! الإعلان ينتظر موافقة الإدارة.";
+
+      form.reset();
+
+    } catch (error) {
+      console.error("RAADI listing error:", error);
+
+      message.textContent =
+        "تعذر إرسال الإعلان. يرجى المحاولة مرة أخرى.";
+
+    } finally {
+      button.disabled = false;
+      button.textContent = "إرسال الإعلان للمراجعة";
+    }
+
+    message.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  });
+});

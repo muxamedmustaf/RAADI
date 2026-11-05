@@ -1,14 +1,14 @@
 
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f766e">
+  <meta name="description" content="رَادي RAADI - منصة الإعلانات والأجهزة المستعملة والأراضي في الصومال.">
   <title>RAADI | رَادي</title>
-  <meta name="description" content="منصة رَادي للإعلانات والأجهزة المستعملة والأراضي في الصومال.">
   <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
 
@@ -21,7 +21,7 @@
       <a href="#about">عن المنصة</a>
     </nav>
 
-    <a href="#add-listing" class="header-button">أضف إعلانك</a>
+    <a href="add-listing.html" class="header-button">أضف إعلانك</a>
   </header>
 
   <main>
@@ -38,7 +38,7 @@
 
         <div class="hero-actions">
           <a href="#listings" class="primary-button">تصفح الإعلانات</a>
-          <a href="#add-listing" class="secondary-button">أضف إعلانًا</a>
+          <a href="add-listing.html" class="secondary-button">أضف إعلانًا</a>
         </div>
       </div>
 
@@ -51,7 +51,7 @@
 
         <div class="visual-card">
           <div class="visual-icon">🏡</div>
-          <strong>أراضي للبيع</strong>
+          <strong>أراضٍ للبيع</strong>
           <span>ابحث حسب الموقع</span>
         </div>
       </div>
@@ -67,25 +67,25 @@
       </div>
 
       <div class="category-grid">
-        <a href="#listings" class="category-card">
+        <a href="#listings" class="category-card" data-category="phones">
           <span>📱</span>
           <strong>الهواتف</strong>
           <small>هواتف مستعملة</small>
         </a>
 
-        <a href="#listings" class="category-card">
+        <a href="#listings" class="category-card" data-category="computers">
           <span>💻</span>
           <strong>الحواسيب</strong>
           <small>أجهزة الكمبيوتر</small>
         </a>
 
-        <a href="#listings" class="category-card">
+        <a href="#listings" class="category-card" data-category="electronics">
           <span>🎧</span>
           <strong>الإلكترونيات</strong>
           <small>أجهزة وإكسسوارات</small>
         </a>
 
-        <a href="#listings" class="category-card">
+        <a href="#listings" class="category-card" data-category="land">
           <span>🌱</span>
           <strong>الأراضي</strong>
           <small>أراضٍ خام غير مبنية</small>
@@ -117,6 +117,7 @@
         <h2>اعرض إعلانك على رَادي</h2>
         <p>ابدأ بالوصول إلى المشترين في منطقتك.</p>
       </div>
+
       <a href="add-listing.html" class="primary-button">أضف إعلانك الآن</a>
     </section>
 

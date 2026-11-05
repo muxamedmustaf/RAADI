@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f766e">
   <title>إضافة إعلان | RAADI</title>
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="listing.css">
-  <script src="listing.js" defer></script>
 </head>
 <body>
 
@@ -32,15 +31,15 @@
       </div>
 
       <form id="listing-form" class="listing-form">
+
         <div class="form-group">
           <label for="title">عنوان الإعلان</label>
-          <input id="title" name="title" type="text"
-            placeholder="مثال: هاتف سامسونج مستعمل" required>
+          <input id="title" type="text" required>
         </div>
 
         <div class="form-group">
           <label for="category">الفئة</label>
-          <select id="category" name="category" required>
+          <select id="category" required>
             <option value="">اختر الفئة</option>
             <option value="phones">الهواتف</option>
             <option value="computers">الحواسيب</option>
@@ -51,40 +50,36 @@
 
         <div class="form-group">
           <label for="price">السعر بالدولار</label>
-          <input id="price" name="price" type="number"
-            min="0" step="0.01" placeholder="مثال: 150" required>
+          <input id="price" type="number" min="0" step="0.01" required>
         </div>
 
         <div class="form-group">
           <label for="city">المدينة أو المنطقة</label>
-          <input id="city" name="city" type="text"
-            placeholder="مثال: بوصاصو" required>
+          <input id="city" type="text" required>
+        </div>
+
+        <div class="form-group">
+          <label for="seller_name">اسم البائع</label>
+          <input id="seller_name" type="text" required>
         </div>
 
         <div class="form-group">
           <label for="description">تفاصيل الإعلان</label>
-          <textarea id="description" name="description"
-            rows="5" placeholder="اكتب تفاصيل المنتج أو الأرض..." required></textarea>
+          <textarea id="description" rows="5" required></textarea>
         </div>
 
         <div class="form-group">
-          <label for="phone">رقم واتساب للتواصل</label>
-          <input id="phone" name="phone" type="tel"
-            placeholder="أدخل رقم واتساب مع رمز الدولة" required>
-        </div>
-
-        <div class="form-group">
-          <label for="images">صور الإعلان</label>
-          <input id="images" name="images" type="file"
-            accept="image/*" multiple>
-          <small>يمكنك اختيار أكثر من صورة.</small>
+          <label for="phone">رقم واتساب</label>
+          <input id="phone" type="tel" required>
         </div>
 
         <button type="submit" class="primary-button">
           إرسال الإعلان للمراجعة
         </button>
 
-        <p id="form-message" class="form-message" aria-live="polite"></p>
+        <p id="form-message" class="form-message"
+           aria-live="polite"></p>
+
       </form>
     </section>
   </main>
@@ -94,6 +89,10 @@
     <p>منصة رَادي للإعلانات المحلية</p>
     <small>© 2026 RAADI</small>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="listing.js"></script>
 
 </body>
 </html>

@@ -8,26 +8,26 @@ async function fetchListings(filters = {}) {
     listingsContainer.innerHTML = '<div class="loading">جاري تحميل الإعلانات...</div>';
 
     try {
-        // التحقق من وجود كائن الاتصال raadiDB
+        // التحقق من تهيئة الاتصال بقاعدة البيانات
         if (typeof raadiDB === 'undefined') {
-            console.error('خطأ: لم يتم تحميل raadiDB من ملف supabase.js');
-            listingsContainer.innerHTML = '<p class="error-msg">خطأ في تهيئة الاتصال بقاعدة البيانات.</p>';
+            console.error('خطأ: لم يتم تعريف raadiDB. تأكد من تحميل ملف supabase.js أولاً.');
+            listingsContainer.innerHTML = '<p class="error-msg">خطأ في الاتصال بقاعدة البيانات.</p>';
             return;
         }
 
-        // جلب الإعلانات المعتمدة فقط باستخدام raadiDB
+        // جلب الإعلانات ذات الحالة approved فقط
         let query = raadiDB
             .from('listings')
             .select('*')
             .eq('status', 'approved');
 
-        // فلترة بالكلمة المفتاحية
+        // فلترة بالكلمات المفتاحية (عنوان أو وصف)
         if (filters.keyword && filters.keyword.trim() !== '') {
             const term = `%${filters.keyword.trim()}%`;
             query = query.or(`title.ilike.${term},description.ilike.${term}`);
         }
 
-        // فلترة بالمدينة (بحث مرن غير حساس لحالة الأحرف)
+        // فلترة بالمدينة أو المنطقة
         if (filters.city && filters.city.trim() !== '') {
             query = query.ilike('city', `%${filters.city.trim()}%`);
         }
@@ -37,13 +37,13 @@ async function fetchListings(filters = {}) {
             query = query.eq('category', filters.category);
         }
 
-        // الترتيب حسب الأحدث
+        // الترتيب من الأحدث للأقدم
         query = query.order('created_at', { ascending: false });
 
         const { data: listings, error } = await query;
 
         if (error) {
-            console.error('خطأ في جلب الإعلانات:', error);
+            console.error('خطأ في جلب الإعلانات من Supabase:', error);
             listingsContainer.innerHTML = '<p class="error-msg">حدث خطأ أثناء تحميل الإعلانات.</p>';
             return;
         }
@@ -74,14 +74,14 @@ function renderListings(listings) {
         const imageUrl = item.image_url || (Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : 'placeholder.jpg');
         
         const cardHtml = `
-            <div class="listing-card">
-                <img src="${imageUrl}" alt="${item.title || 'إعلان'}" class="listing-img" onerror="this.src='placeholder.jpg';">
-                <div class="listing-info">
-                    <span class="category-badge">${item.category || 'عام'}</span>
-                    <h4 class="listing-title">${item.title || 'بدون عنوان'}</h4>
-                    <p class="listing-price">${item.price ? item.price + ' $' : 'حسب الاتفاق'}</p>
-                    <p class="listing-location">📍 ${item.city || 'غير محدد'}</p>
-                    <a href="listing.html?id=${item.id}" class="btn-details">عرض التفاصيل</a>
+            <div class="listing-card" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; background: #fff;">
+                <img src="${imageUrl}" alt="${item.title || 'إعلان'}" class="listing-img" style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px;" onerror="this.src='placeholder.jpg';">
+                <div class="listing-info" style="margin-top: 10px;">
+                    <span class="category-badge" style="background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 12px;">${item.category || 'عام'}</span>
+                    <h4 class="listing-title" style="margin: 8px 0 5px; font-size: 18px;">${item.title || 'بدون عنوان'}</h4>
+                    <p class="listing-price" style="color: #2b6cb0; font-weight: bold; margin: 5px 0;">السعر: ${item.price ? item.price + ' $' : 'حسب الاتفاق'}</p>
+                    <p class="listing-location" style="color: #666; margin: 5px 0;">📍 المدينة: ${item.city || 'غير محدد'}</p>
+                    <a href="listing.html?id=${item.id}" class="btn-details" style="display: inline-block; margin-top: 8px; background: #319795; color: #fff; padding: 6px 12px; border-radius: 4px; text-decoration: none;">عرض التفاصيل</a>
                 </div>
             </div>
         `;

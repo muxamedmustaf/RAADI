@@ -3,36 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الإعلانات - RAADI</title>
+    <title>منصة الإعلانات المحلية - RAADI</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- شريط التنقل والأزرار العلوية -->
     <header class="main-header">
-        <div class="container">
-            <h1>منصة الإعلانات RAADI</h1>
-            <nav>
+        <div class="container header-container">
+            <h1 class="logo">RAADI رادي</h1>
+            <nav class="nav-links">
                 <a href="index.html" class="active">الرئيسية</a>
-                <a href="add-listing.html">نشر إعلان جديد</a>
+                <a href="add-listing.html" class="btn-nav-add">نشر إعلان جديد</a>
+                <a href="#categories">التصنيفات</a>
+                <a href="#about">عن المنصة</a>
             </nav>
         </div>
     </header>
 
+    <!-- قسم البحث والفلترة -->
     <section class="search-section">
         <div class="container">
+            <h2>ابحث عما تريده بسهولة</h2>
             <form id="search-form" class="search-form">
                 <div class="form-group">
-                    <label for="search-keyword">كلمات البحث</label>
                     <input type="text" id="search-keyword" placeholder="ابحث في العنوان أو الوصف...">
                 </div>
 
                 <div class="form-group">
-                    <label for="search-city">المدينة أو المنطقة</label>
-                    <input type="text" id="search-city" placeholder="مثال: Galkacyo">
+                    <input type="text" id="search-city" placeholder="المدينة أو المنطقة (مثال: Galkacyo)">
                 </div>
 
                 <div class="form-group">
-                    <label for="search-category">التصنيف</label>
                     <select id="search-category">
                         <option value="all">جميع التصنيفات</option>
                         <option value="real-estate">عقارات</option>
@@ -41,11 +43,12 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn-search">ابحث</button>
+                <button type="submit" class="btn-search">بحث</button>
             </form>
         </div>
     </section>
 
+    <!-- قسم عرض الإعلانات -->
     <main class="container main-content">
         <h2>الإعلانات المتاحة</h2>
         <div id="listings-container" class="listings-grid">
@@ -53,13 +56,15 @@
         </div>
     </main>
 
+    <!-- التذييل -->
     <footer class="main-footer">
         <div class="container">
-            <p>جميع الحقوق محفوظة © منصة RAADI</p>
+            <p>منصة رادي للإعلانات المحلية</p>
+            <p>جميع الحقوق محفوظة © RAADI 2026</p>
         </div>
     </footer>
 
-    <!-- الترتيب الصحيح: المكتبة -> ملف raadiDB -> سكريبت العرض -->
+    <!-- سكربتات الاتصال وقاعدة البيانات -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <script src="script.js"></script>

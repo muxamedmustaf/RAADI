@@ -1,81 +1,91 @@
 // script.js
 
-// جلب وتصفية الإعلانات من Supabase
+// دالة جلب وطباعة الإعلانات من Supabase
 async function fetchListings(filters = {}) {
     const listingsContainer = document.getElementById('listings-container');
-    if (!listingsContainer) return;
+    if (!listingsContainer) {
+        console.error("لم يتم العثور على العنصر listings-container في الصفحة");
+        return;
+    }
 
     // إظهار مؤشر التحميل
     listingsContainer.innerHTML = '<div class="loading">جاري تحميل الإعلانات...</div>';
 
     try {
-        // البدء بجلب الإعلانات ذات الحالة المقبولة (approved) فقط
+        // التحقق من اتصال Supabase
+        if (typeof supabase === 'undefined') {
+            throw new Error("مكتبة Supabase غير متصلة أو لم يتم تحميل supabase.js بنجاح");
+        }
+
+        // بناء استعلام الجلب للإعلانات المقبولة
         let query = supabase
             .from('listings')
             .select('*')
-            .eq('status', 'approved'); // مطابقة الحالة تماماً مع قاعدة البيانات
+            .eq('status', 'approved');
 
-        // فلترة بالكلمة المفتاحية (عنوان الإعلان أو الوصف)
+        // تطبيق الفلاتر عند وجودها
         if (filters.keyword && filters.keyword.trim() !== '') {
             const term = `%${filters.keyword.trim()}%`;
             query = query.or(`title.ilike.${term},description.ilike.${term}`);
         }
 
-        // فلترة بالمدينة (استخدام ilike لتجنب مشاكل حالة الأحرف)
         if (filters.city && filters.city.trim() !== '') {
             query = query.ilike('city', `%${filters.city.trim()}%`);
         }
 
-        // فلترة بالفئة (Category)
         if (filters.category && filters.category !== 'all') {
             query = query.eq('category', filters.category);
         }
 
-        // ترتيب النتائج (الأحدث أولاً)
+        // الترتيب حسب الأحدث
         query = query.order('created_at', { ascending: false });
 
+        // تنفيذ الاستعلام
         const { data: listings, error } = await query;
 
         if (error) {
-            console.error('خطأ في جلب الإعلانات من Supabase:', error);
-            listingsContainer.innerHTML = '<p class="error-msg">حدث خطأ أثناء تحميل البيانات.</p>';
+            console.error('خطأ Supabase أثناء الجلب:', error);
+            listingsContainer.innerHTML = '<p class="error-msg">حدث خطأ أثناء تحميل البيانات من الخادم.</p>';
             return;
         }
 
-        // في حال عدم وجود نتائج
+        console.log("البيانات التي تم جلبها وطباعتها بنجاح:", listings);
+
+        // التعامل مع النتيجة الفارغة
         if (!listings || listings.length === 0) {
             listingsContainer.innerHTML = `
                 <div class="no-results">
-                    <img src="search-icon.svg" alt="بحث" width="50">
                     <h3>لا توجد إعلانات للعرض حاليًا</h3>
-                    <p>جرب تغيير كلمات البحث أو المدينة.</p>
+                    <p>جرب تغيير كلمات البحث أو اسم المدينة.</p>
                 </div>
             `;
             return;
         }
 
-        // عرض الإعلانات في الواجهة
+        // طباعة الإعلانات في الواجهة
         renderListings(listings);
 
     } catch (err) {
-        console.error('خطأ غير متوقع:', err);
+        console.error('خطأ غير متوقع:', err.message || err);
+        listingsContainer.innerHTML = '<p class="error-msg">تعذر الاتصال بقاعدة البيانات.</p>';
     }
 }
 
-// دالة بناء بطاقات الإعلانات
+// دالة رندر وطباعة العناصر داخل بطاقات HTML
 function renderListings(listings) {
     const listingsContainer = document.getElementById('listings-container');
     listingsContainer.innerHTML = '';
 
     listings.forEach(item => {
-        const imageUrl = item.image_url || item.images?.[0] || 'placeholder.jpg';
+        // استخراج الصورة المتاحة
+        const imageUrl = item.image_url || (Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : 'placeholder.jpg');
         
         const cardHtml = `
             <div class="listing-card">
-                <img src="${imageUrl}" alt="${item.title}" class="listing-img">
+                <img src="${imageUrl}" alt="${item.title || 'إعلان'}" class="listing-img" onerror="this.src='placeholder.jpg';">
                 <div class="listing-info">
                     <span class="category-badge">${item.category || 'عام'}</span>
-                    <h4 class="listing-title">${item.title}</h4>
+                    <h4 class="listing-title">${item.title || 'بدون عنوان'}</h4>
                     <p class="listing-price">${item.price ? item.price + ' $' : 'حسب الاتفاق'}</p>
                     <p class="listing-location">📍 ${item.city || 'غير محدد'}</p>
                     <a href="listing.html?id=${item.id}" class="btn-details">عرض التفاصيل</a>
@@ -86,20 +96,27 @@ function renderListings(listings) {
     });
 }
 
-// تشغيل الجلب عند تحميل الصفحة
+// تهيئة الأحداث بعد تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
+    // تشغيل الجلب الأولي عند التحميل
     fetchListings();
 
-    // ربط نموذج البحث
+    // ربط نموذج البحث إن وجد
     const searchForm = document.getElementById('search-form');
     if (searchForm) {
         searchForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const keyword = document.getElementById('search-keyword')?.value;
-            const city = document.getElementById('search-city')?.value;
-            const category = document.getElementById('search-category')?.value;
+            const keywordEl = document.getElementById('search-keyword');
+            const cityEl = document.getElementById('search-city');
+            const categoryEl = document.getElementById('search-category');
 
-            fetchListings({ keyword, city, category });
+            const filters = {
+                keyword: keywordEl ? keywordEl.value : '',
+                city: cityEl ? cityEl.value : '',
+                category: categoryEl ? categoryEl.value : ''
+            };
+
+            fetchListings(filters);
         });
     }
 });

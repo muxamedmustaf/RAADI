@@ -1,70 +1,224 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="RAADI - منصة الإعلانات المحلية في الصومال">
     <title>منصة الإعلانات المحلية - RAADI</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- شريط التنقل والأزرار العلوية -->
+    <!-- Header -->
     <header class="main-header">
         <div class="container header-container">
             <h1 class="logo">RAADI رادي</h1>
+
             <nav class="nav-links">
                 <a href="index.html" class="active">الرئيسية</a>
                 <a href="add-listing.html" class="btn-nav-add">نشر إعلان جديد</a>
                 <a href="#categories">التصنيفات</a>
+                <a href="#listings">الإعلانات</a>
+                <a href="#fees">رسوم الخدمة</a>
+                <a href="#support">المساعدة</a>
                 <a href="#about">عن المنصة</a>
             </nav>
         </div>
     </header>
 
-    <!-- قسم البحث والفلترة -->
-    <section class="search-section">
+    <!-- Hero -->
+    <section class="hero-section">
         <div class="container">
-            <h2>ابحث عما تريده بسهولة</h2>
-            <form id="search-form" class="search-form">
-                <div class="form-group">
-                    <input type="text" id="search-keyword" placeholder="ابحث في العنوان أو الوصف...">
-                </div>
+            <h2>ابحث عما تريد، واعرض ما تبيع</h2>
+            <p>
+                رَادي تجمع البائعين والمشترين في مكان واحد.
+                ابحث عن الأجهزة والأراضي والعقارات والسلع بالقرب منك.
+            </p>
 
-                <div class="form-group">
-                    <input type="text" id="search-city" placeholder="المدينة أو المنطقة (مثال: Galkacyo)">
-                </div>
-
-                <div class="form-group">
-                    <select id="search-category">
-                        <option value="all">جميع التصنيفات</option>
-                        <option value="real-estate">عقارات</option>
-                        <option value="vehicles">مركبات</option>
-                        <option value="electronics">إلكترونيات</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-search">بحث</button>
-            </form>
+            <a href="add-listing.html" class="btn-nav-add">
+                أضف إعلانك الآن
+            </a>
         </div>
     </section>
 
-    <!-- قسم عرض الإعلانات -->
-    <main class="container main-content">
-        <h2>الإعلانات المتاحة</h2>
-        <div id="listings-container" class="listings-grid">
-            <div class="loading">جاري تحميل الإعلانات...</div>
+    <!-- Categories -->
+    <section id="categories" class="container categories-section">
+        <h2>التصنيفات</h2>
+
+        <div class="categories-grid">
+            <a href="#listings" class="category-card" data-category="real-estate">
+                <span>🏡</span>
+                <h3>العقارات والأراضي</h3>
+            </a>
+
+            <a href="#listings" class="category-card" data-category="vehicles">
+                <span>🚗</span>
+                <h3>المركبات</h3>
+            </a>
+
+            <a href="#listings" class="category-card" data-category="electronics">
+                <span>📱</span>
+                <h3>الإلكترونيات</h3>
+            </a>
+
+            <a href="#listings" class="category-card" data-category="phones">
+                <span>📞</span>
+                <h3>الهواتف</h3>
+            </a>
+
+            <a href="#listings" class="category-card" data-category="computers">
+                <span>💻</span>
+                <h3>الحواسيب</h3>
+            </a>
         </div>
+    </section>
+
+    <!-- Search -->
+    <section class="search-section">
+        <div class="container">
+            <h2>ابحث عما تريده بسهولة</h2>
+
+            <form id="search-form" class="search-form">
+
+                <div class="form-group">
+                    <label for="search-keyword">اسم الشيء أو الإعلان</label>
+                    <input
+                        type="search"
+                        id="search-keyword"
+                        placeholder="مثال: هاتف سامسونج أو أرض"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="search-city">المدينة أو المنطقة</label>
+                    <input
+                        type="text"
+                        id="search-city"
+                        placeholder="اكتب المدينة أو المنطقة"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="search-category">التصنيف</label>
+                    <select id="search-category">
+                        <option value="all">جميع التصنيفات</option>
+                        <option value="real-estate">العقارات والأراضي</option>
+                        <option value="vehicles">المركبات</option>
+                        <option value="electronics">الإلكترونيات</option>
+                        <option value="phones">الهواتف</option>
+                        <option value="computers">الحواسيب</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="search-sort">ترتيب النتائج</label>
+                    <select id="search-sort">
+                        <option value="newest">الأحدث أولاً</option>
+                        <option value="price-asc">السعر: الأقل أولاً</option>
+                        <option value="price-desc">السعر: الأعلى أولاً</option>
+                        <option value="nearest">الأقرب إليّ</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-search">
+                    بحث
+                </button>
+
+                <button type="button" id="clear-search" class="btn-search">
+                    مسح البحث
+                </button>
+
+            </form>
+
+            <p id="search-message" aria-live="polite"></p>
+
+            <button type="button" id="use-location" class="btn-search">
+                تحديد موقعي للبحث عن الأقرب
+            </button>
+        </div>
+    </section>
+
+    <!-- Listings -->
+    <main id="listings" class="container main-content">
+
+        <h2>الإعلانات المتاحة</h2>
+
+        <div id="listings-container" class="listings-grid">
+            <div class="loading">
+                جاري تحميل الإعلانات...
+            </div>
+        </div>
+
+        <div id="listings-empty" hidden>
+            <h3>لا توجد إعلانات مطابقة</h3>
+            <p>جرّب تغيير كلمات البحث أو المدينة.</p>
+        </div>
+
     </main>
 
-    <!-- التذييل -->
+    <!-- Service Fees -->
+    <section id="fees" class="container fees-section">
+        <h2>رسوم خدمة رَادي</h2>
+
+        <p>
+            ستجد هنا معلومات رسوم نشر الإعلانات وطرق دفعها.
+            سيتم توضيح الرسوم قبل تفعيل خدمة الدفع.
+        </p>
+
+        <a href="add-listing.html" class="btn-nav-add">
+            أضف إعلانك
+        </a>
+    </section>
+
+    <!-- Support -->
+    <section id="support" class="container support-section">
+        <h2>المساعدة والتواصل</h2>
+
+        <p>
+            هل تواجه مشكلة في نشر إعلانك أو استخدام المنصة؟
+            تواصل مع فريق دعم رَادي.
+        </p>
+
+        <a
+            href="https://wa.me/252907941910"
+            class="btn-nav-add"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            تواصل معنا عبر واتساب
+        </a>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="container about-section">
+        <h2>عن منصة رَادي</h2>
+
+        <p>
+            رَادي منصة إعلانات محلية تجمع البائعين والمشترين
+            وتساعدهم على التواصل مباشرة.
+            لا تتدخل المنصة في عمليات البيع أو الشراء أو التسليم.
+        </p>
+    </section>
+
+    <!-- Footer -->
     <footer class="main-footer">
         <div class="container">
-            <p>منصة رادي للإعلانات المحلية</p>
+            <h3>RAADI رادي</h3>
+            <p>منصة رادي للإعلانات المحلية في الصومال</p>
+
+            <p>
+                <a href="#support">المساعدة والتواصل</a>
+                |
+                <a href="#fees">رسوم الخدمة</a>
+            </p>
+
             <p>جميع الحقوق محفوظة © RAADI 2026</p>
         </div>
     </footer>
 
-    <!-- سكربتات الاتصال وقاعدة البيانات -->
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <script src="script.js"></script>

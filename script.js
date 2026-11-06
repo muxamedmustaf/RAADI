@@ -1,12 +1,22 @@
 
 "use strict";
 
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
 async function fetchListings(filters = {}) {
     const container = document.getElementById("listings-container");
 
     if (!container) return;
 
-    container.innerHTML = "جاري تحميل الإعلانات...";
+    container.innerHTML = '<p class="listings-loading">جاري تحميل الإعلانات...</p>';
 
     try {
         const { data, error } = await raadiDB
@@ -18,7 +28,7 @@ async function fetchListings(filters = {}) {
         if (error) {
             console.error("SUPABASE ERROR:", error);
             container.innerHTML =
-                `<p>خطأ قاعدة البيانات: ${error.message}</p>`;
+                `<p class="listings-error">خطأ قاعدة البيانات: ${escapeHTML(error.message)}</p>`;
             return;
         }
 
@@ -28,6 +38,7 @@ async function fetchListings(filters = {}) {
 
         if (filters.keyword) {
             const word = filters.keyword.toLowerCase();
+
             listings = listings.filter(item =>
                 (item.title || "").toLowerCase().includes(word) ||
                 (item.description || "").toLowerCase().includes(word)
@@ -50,37 +61,71 @@ async function fetchListings(filters = {}) {
 
         if (!listings.length) {
             container.innerHTML =
-                "<h3>لا توجد إعلانات للعرض حالياً</h3>";
+                '<div class="listings-empty"><h3>لا توجد إعلانات للعرض حالياً</h3></div>';
             return;
         }
 
-        container.innerHTML = listings.map(item => {
-            const image = item.image_url ||
-                (Array.isArray(item.images) ? item.images[0] : "") ||
-                "placeholder.jpg";
+        container.innerHTML = `
+            <div class="listings-grid">
+                ${listings.map(item => {
+                    const image = item.image_url ||
+                        (Array.isArray(item.images) ? item.images[0] : "");
 
-            return `
-                <article class="listing-card">
-                    <img src="${image}" alt="إعلان"
-                         style="width:100%;height:180px;object-fit:cover"
-                         onerror="this.style.display='none'">
+                    return `
+                        <article class="listing-card">
 
-                    <h3>${item.title || "بدون عنوان"}</h3>
-                    <p>${item.description || ""}</p>
-                    <p>السعر: ${item.price || "حسب الاتفاق"} $</p>
-                    <p>المدينة: ${item.city || "غير محدد"}</p>
+                            <div class="listing-image">
+                                ${
+                                    image
+                                    ? `<img src="${escapeHTML(image)}"
+                                           alt="${escapeHTML(item.title || "صورة الإعلان")}"
+                                           loading="lazy"
+                                           onerror="this.parentElement.innerHTML='<div class=&quot;no-listing-image&quot;>لا توجد صورة</div>'">`
+                                    : '<div class="no-listing-image">لا توجد صورة</div>'
+                                }
+                            </div>
 
-                    <a href="listing.html?id=${item.id}">
-                        عرض التفاصيل
-                    </a>
-                </article>
-            `;
-        }).join("");
+                            <div class="listing-content">
+
+                                <span class="listing-category">
+                                    ${escapeHTML(item.category || "إعلان")}
+                                </span>
+
+                                <h3 class="listing-title">
+                                    ${escapeHTML(item.title || "بدون عنوان")}
+                                </h3>
+
+                                <p class="listing-description">
+                                    ${escapeHTML(item.description || "")}
+                                </p>
+
+                                <div class="listing-price">
+                                    ${item.price !== null && item.price !== undefined && item.price !== ""
+                                        ? escapeHTML(item.price) + " $"
+                                        : "حسب الاتفاق"}
+                                </div>
+
+                                <div class="listing-city">
+                                    📍 ${escapeHTML(item.city || "غير محدد")}
+                                </div>
+
+                                <a class="listing-details"
+                                   href="listing.html?id=${encodeURIComponent(item.id)}">
+                                    عرض التفاصيل
+                                </a>
+
+                            </div>
+                        </article>
+                    `;
+                }).join("")}
+            </div>
+        `;
 
     } catch (error) {
         console.error("RAADI ERROR:", error);
+
         container.innerHTML =
-            `<p>حدث خطأ: ${error.message}</p>`;
+            `<p class="listings-error">حدث خطأ: ${escapeHTML(error.message)}</p>`;
     }
 }
 

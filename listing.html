@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>تفاصيل الإعلان | RAADI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #087b55;
+            color: white;
+            padding: 18px 15px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .page {
+            max-width: 850px;
+            margin: 25px auto;
+            padding: 15px;
+        }
+
+        .listing-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        #listing-image {
+            width: 100%;
+            max-height: 450px;
+            object-fit: contain;
+            background: #eee;
+            display: block;
+        }
+
+        .listing-content {
+            padding: 22px;
+        }
+
+        #listing-title {
+            font-size: 25px;
+            margin: 0 0 15px;
+        }
+
+        #listing-price {
+            color: #087b55;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .listing-city {
+            color: #666;
+            margin: 12px 0;
+        }
+
+        .description-title {
+            margin-top: 25px;
+            font-size: 19px;
+        }
+
+        #listing-description {
+            line-height: 1.9;
+            white-space: pre-wrap;
+            color: #444;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: #087b55;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        #listing-details-container {
+            text-align: right;
+        }
+
+        @media (max-width: 600px) {
+            .page {
+                margin: 12px auto;
+                padding: 10px;
+            }
+
+            #listing-title {
+                font-size: 21px;
+            }
+
+            .listing-content {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>RAADI</h1>
+        <p>تفاصيل الإعلان</p>
+    </header>
+
+    <main class="page">
+
+        <div id="listing-details-container">
+
+            <div class="listing-card">
+
+                <img
+                    id="listing-image"
+                    src=""
+                    alt="صورة الإعلان"
+                    onerror="this.style.display='none'"
+                >
+
+                <div class="listing-content">
+
+                    <h2 id="listing-title">
+                        جاري تحميل الإعلان...
+                    </h2>
+
+                    <div id="listing-price"></div>
+
+                    <div class="listing-city">
+                        المدينة:
+                        <span id="listing-city"></span>
+                    </div>
+
+                    <h3 class="description-title">
+                        وصف الإعلان
+                    </h3>
+
+                    <p id="listing-description"></p>
+
+                    <a href="index.html" class="back-button">
+                        العودة إلى الصفحة الرئيسية
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="listing.js"></script>
+
+</body>
+</html>

@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة الإعلانات - RAADI</title>
-    <!-- روابط التنسيق -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- رأس الصفحة -->
     <header class="main-header">
         <div class="container">
-            <h1>منصة الإعلانات</h1>
+            <h1>منصة الإعلانات RAADI</h1>
             <nav>
                 <a href="index.html" class="active">الرئيسية</a>
                 <a href="add-listing.html">نشر إعلان جديد</a>
@@ -20,7 +18,6 @@
         </div>
     </header>
 
-    <!-- قسم البحث والفلترة -->
     <section class="search-section">
         <div class="container">
             <form id="search-form" class="search-form">
@@ -49,24 +46,20 @@
         </div>
     </section>
 
-    <!-- قسم عرض الإعلانات (الحاوية الأساسية التي ينتظرها الجافاسكريبت) -->
     <main class="container main-content">
         <h2>الإعلانات المتاحة</h2>
-        
-        <!-- الحاوية المسؤولة عن طباعة البطاقات برمجياً -->
         <div id="listings-container" class="listings-grid">
             <div class="loading">جاري تحميل الإعلانات...</div>
         </div>
     </main>
 
-    <!-- تذييل الصفحة -->
     <footer class="main-footer">
         <div class="container">
             <p>جميع الحقوق محفوظة © منصة RAADI</p>
         </div>
     </footer>
 
-    <!-- استدعاء مكتبة Supabase والملفات البرمجية بالترتيب الصحيح -->
+    <!-- الترتيب الصحيح: المكتبة -> ملف raadiDB -> سكريبت العرض -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <script src="script.js"></script>

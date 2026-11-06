@@ -1,94 +1,105 @@
-"use strict";
+// script.js
 
-document.addEventListener("DOMContentLoaded", () => {
-  const listingsGrid = document.querySelector("#listings-grid");
-  const emptyState = document.querySelector("#listings-empty");
-  const searchForm = document.querySelector("#listing-search");
-  const searchName = document.querySelector("#search-name");
-  const searchCity = document.querySelector("#search-city");
-  const sortSelect = document.querySelector("#listing-sort");
-  const searchMessage = document.querySelector("#search-message");
-  const clearBtn = document.querySelector("#clear-search");
+// جلب وتصفية الإعلانات من Supabase
+async function fetchListings(filters = {}) {
+    const listingsContainer = document.getElementById('listings-container');
+    if (!listingsContainer) return;
 
-  if (!listingsGrid) return;
-  let allListings = [];
+    // إظهار مؤشر التحميل
+    listingsContainer.innerHTML = '<div class="loading">جاري تحميل الإعلانات...</div>';
 
-  async function fetchListings() {
-    listingsGrid.innerHTML = "<p style='text-align:center; width:100%;'>جارٍ التحميل...</p>";
-    const { data, error } = await raadiDB.from("listings").select("*").in("status", ["approved", "sold"]).order("created_at", { ascending: false });
+    try {
+        // البدء بجلب الإعلانات ذات الحالة المقبولة (approved) فقط
+        let query = supabase
+            .from('listings')
+            .select('*')
+            .eq('status', 'approved'); // مطابقة الحالة تماماً مع قاعدة البيانات
 
-    if (error) {
-      listingsGrid.innerHTML = "<p style='color:red; text-align:center;'>خطأ: " + error.message + "</p>";
-      return;
+        // فلترة بالكلمة المفتاحية (عنوان الإعلان أو الوصف)
+        if (filters.keyword && filters.keyword.trim() !== '') {
+            const term = `%${filters.keyword.trim()}%`;
+            query = query.or(`title.ilike.${term},description.ilike.${term}`);
+        }
+
+        // فلترة بالمدينة (استخدام ilike لتجنب مشاكل حالة الأحرف)
+        if (filters.city && filters.city.trim() !== '') {
+            query = query.ilike('city', `%${filters.city.trim()}%`);
+        }
+
+        // فلترة بالفئة (Category)
+        if (filters.category && filters.category !== 'all') {
+            query = query.eq('category', filters.category);
+        }
+
+        // ترتيب النتائج (الأحدث أولاً)
+        query = query.order('created_at', { ascending: false });
+
+        const { data: listings, error } = await query;
+
+        if (error) {
+            console.error('خطأ في جلب الإعلانات من Supabase:', error);
+            listingsContainer.innerHTML = '<p class="error-msg">حدث خطأ أثناء تحميل البيانات.</p>';
+            return;
+        }
+
+        // في حال عدم وجود نتائج
+        if (!listings || listings.length === 0) {
+            listingsContainer.innerHTML = `
+                <div class="no-results">
+                    <img src="search-icon.svg" alt="بحث" width="50">
+                    <h3>لا توجد إعلانات للعرض حاليًا</h3>
+                    <p>جرب تغيير كلمات البحث أو المدينة.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // عرض الإعلانات في الواجهة
+        renderListings(listings);
+
+    } catch (err) {
+        console.error('خطأ غير متوقع:', err);
     }
-    allListings = data || [];
-    applyFiltersAndSort();
-  }
+}
 
-  function applyFiltersAndSort() {
-    const nameQuery = searchName.value.trim().toLowerCase();
-    const cityQuery = searchCity.value.trim().toLowerCase();
-    const sortValue = sortSelect.value;
-
-    // الفلترة الآمنة
-    let filtered = allListings.filter(item => {
-      const matchName = !nameQuery || (item.title && item.title.toLowerCase().includes(nameQuery));
-      const matchCity = !cityQuery || (item.location && item.location.toLowerCase().includes(cityQuery));
-      return matchName && matchCity;
-    });
-
-    // الترتيب الآمن
-    if (sortValue === "price-asc") {
-      filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
-    } else if (sortValue === "price-desc") {
-      filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
-    } else {
-      // افتراضياً (الأحدث أو الأقرب) نرتب بالأحدث لتجنب انهيار الكود
-      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    }
-
-    renderListings(filtered);
-  }
-
-  function renderListings(listings) {
-    listingsGrid.innerHTML = "";
-    if (listings.length === 0) {
-      emptyState.style.display = "flex";
-      return;
-    }
-    emptyState.style.display = "none";
+// دالة بناء بطاقات الإعلانات
+function renderListings(listings) {
+    const listingsContainer = document.getElementById('listings-container');
+    listingsContainer.innerHTML = '';
 
     listings.forEach(item => {
-      // حماية الصور: إذا لم تبدأ بـ http نضع صورة افتراضية
-      const imageSrc = (item.image_url && item.image_url.startsWith("http")) 
-        ? item.image_url 
-        : "https://via.placeholder.com/300x200?text=No+Image";
-      
-      const isSold = item.status === "sold";
-      
-      const card = document.createElement("div");
-      card.className = "listing-card";
-      card.innerHTML = `
-        <div class="listing-image-wrapper">
-          <img src="${imageSrc}" class="listing-image" loading="lazy">
-          ${isSold ? '<div class="sold-badge">مباع</div>' : ''}
-        </div>
-        <div class="listing-content">
-          <h3 class="listing-title">${item.title || 'بدون عنوان'}</h3>
-          <p class="listing-price">$${item.price || 0}</p>
-          <p class="listing-location">📍 ${item.location || 'غير محدد'}</p>
-          <a href="https://wa.me/${item.whatsapp}?text=مرحبا، مهتم بإعلانك: ${item.title}" target="_blank" class="whatsapp-btn ${isSold ? 'disabled' : ''}">
-            ${isSold ? 'تم البيع' : 'تواصل عبر واتساب'}
-          </a>
-        </div>
-      `;
-      listingsGrid.appendChild(card);
+        const imageUrl = item.image_url || item.images?.[0] || 'placeholder.jpg';
+        
+        const cardHtml = `
+            <div class="listing-card">
+                <img src="${imageUrl}" alt="${item.title}" class="listing-img">
+                <div class="listing-info">
+                    <span class="category-badge">${item.category || 'عام'}</span>
+                    <h4 class="listing-title">${item.title}</h4>
+                    <p class="listing-price">${item.price ? item.price + ' $' : 'حسب الاتفاق'}</p>
+                    <p class="listing-location">📍 ${item.city || 'غير محدد'}</p>
+                    <a href="listing.html?id=${item.id}" class="btn-details">عرض التفاصيل</a>
+                </div>
+            </div>
+        `;
+        listingsContainer.innerHTML += cardHtml;
     });
-  }
+}
 
-  searchForm.addEventListener("submit", (e) => { e.preventDefault(); applyFiltersAndSort(); });
-  sortSelect.addEventListener("change", () => applyFiltersAndSort());
-  clearBtn.addEventListener("click", () => { searchForm.reset(); applyFiltersAndSort(); });
+// تشغيل الجلب عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', () => {
+    fetchListings();
 
-  fetchListings();
+    // ربط نموذج البحث
+    const searchForm = document.getElementById('search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const keyword = document.getElementById('search-keyword')?.value;
+            const city = document.getElementById('search-city')?.value;
+            const category = document.getElementById('search-category')?.value;
+
+            fetchListings({ keyword, city, category });
+        });
+    }
 });

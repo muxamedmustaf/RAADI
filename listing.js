@@ -8,17 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form || !message) return;
 
+  // 1. معاينة الصورة قبل الرفع
   if (imageInput && imagePreview) {
     imageInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (file) {
-        if (!file.type.startsWith("image/")) {
-          message.textContent = "يرجى اختيار ملف صورة صحيح.";
-          message.className = "form-message error";
-          imageInput.value = "";
-          imagePreview.hidden = true;
-          return;
-        }
         const reader = new FileReader();
         reader.onload = (event) => {
           imagePreview.src = event.target.result;
@@ -34,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // 2. دالة ضغط الصورة (خفيفة ولا تعلق الهاتف)
   async function compressImage(file) {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -45,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
-          const MAX_SIZE = 800;
+          const MAX_SIZE = 1000; // الحد الأقصى 1000 بكسل
 
           if (width > height) {
             if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
@@ -64,12 +59,13 @@ document.addEventListener("DOMContentLoaded", () => {
               lastModified: Date.now()
             });
             resolve(newFile);
-          }, "image/jpeg", 0.8);
+          }, "image/jpeg", 0.8); // جودة 80% (حجم صغير جداً)
         };
       };
     });
   }
 
+  // 3. إرسال النموذج
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
@@ -78,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const originalText = button.textContent;
     
     button.disabled = true;
-    button.textContent = "جارٍ معالجة الصورة والإرسال...";
+    button.textContent = "جارٍ المعالجة والإرسال...";
     message.className = "form-message";
     message.textContent = "جارٍ الاتصال...";
 
@@ -91,13 +87,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const compressedFile = await compressImage(file);
         const fileName = `img_${Date.now()}.jpg`;
 
-        message.textContent = "جارٍ رفع الصورة إلى السيرفر...";
+        message.textContent = "جارٍ رفع الصورة إلى Supabase...";
         const { error: uploadError } = await raadiDB.storage
           .from("listing-images")
           .upload(fileName, compressedFile);
 
+        // كشف الأخطاء الشائعة في التخزين
         if (uploadError) {
-          throw new Error("فشل رفع الصورة: " + uploadError.message);
+          if (uploadError.message.includes("Bucket not found")) {
+            throw new Error("خطأ: مجلد الصور (listing-images) غير موجود في Supabase.");
+          } else if (uploadError.message.includes("policy")) {
+            throw new Error("خطأ: لا توجد صلاحيات (Policies) لرفع الصور في Supabase.");
+          } else {
+            throw new Error("فشل رفع الصورة: " + uploadError.message);
+          }
         }
 
         const { data: urlData } = raadiDB.storage
@@ -107,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
         imageUrl = urlData.publicUrl;
       }
 
-      message.textContent = "جارٍ حفظ الإعلان في قاعدة البيانات...";
+      message.textContent = "جارٍ حفظ الإعلان...";
       const listing = {
         title: document.querySelector("#title").value.trim(),
         category: document.querySelector("#category").value,
@@ -136,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (error) {
       console.error("RAADI listing error:", error);
-      message.textContent = error.message; // سيعرض الخطأ الحقيقي على الشاشة
+      message.textContent = error.message;
       message.classList.add("error");
     } finally {
       button.disabled = false;

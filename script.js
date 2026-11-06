@@ -25,12 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (error) {
       console.error("خطأ في جلب الإعلانات:", error);
-      // إظهار الخطأ على الشاشة لنعرف السبب
-      listingsGrid.innerHTML = `<div style='text-align:center; color:red; width:100%; padding:20px; border:1px solid red; border-radius:8px;'>
-        <b>خطأ في جلب البيانات من Supabase:</b><br>
-        ${error.message}<br>
-        <small>تأكد من أسماء الأعمدة و الصلاحيات (Policies)</small>
-      </div>`;
+      listingsGrid.innerHTML = `<p style='text-align:center; color:red; width:100%;'>حدث خطأ: ${error.message}</p>`;
       return;
     }
 
@@ -38,13 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
     applyFiltersAndSort();
   }
 
-  async function applyFiltersAndSort() {
+  function applyFiltersAndSort() {
     const nameQuery = searchName.value.trim().toLowerCase();
     const cityQuery = searchCity.value.trim().toLowerCase();
     const sortValue = sortSelect.value;
 
     let filtered = allListings.filter(item => {
-      const matchName = !nameQuery || item.title.toLowerCase().includes(nameQuery) || (item.description && item.description.toLowerCase().includes(nameQuery));
+      const matchName = !nameQuery || (item.title && item.title.toLowerCase().includes(nameQuery)) || (item.description && item.description.toLowerCase().includes(nameQuery));
       const matchCity = !cityQuery || (item.location && item.location.toLowerCase().includes(cityQuery));
       return matchName && matchCity;
     });
@@ -53,7 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
       filtered.sort((a, b) => a.price - b.price);
     } else if (sortValue === "price-desc") {
       filtered.sort((a, b) => b.price - a.price);
-    } else if (sortValue === "newest") {
+    } else {
+      // افتراضياً (الأحدث) - بما في ذلك خيار "الأقرب" مؤقتاً لأنه لا يوجد خرائط بعد
       filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
 
@@ -73,7 +69,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     listings.forEach(item => {
       const isSold = item.status === "sold";
-      const imageSrc = item.image_url ? item.image_url : "https://via.placeholder.com/300x200?text=No+Image";
+      
+      // معالجة الصورة: إذا كان الرابط "LL" أو فارغاً، نضع صورة افتراضية
+      let imageSrc = "https://via.placeholder.com/300x200?text=No+Image";
+      if (item.image_url && item.image_url.startsWith("http")) {
+        imageSrc = item.image_url;
+      }
+
       const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString("ar-EG") : "غير محدد";
       
       const card = document.createElement("div");

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -5,12 +6,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إضافة إعلان جديد - RAADI</title>
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        .main-header {
+            background: white;
+            padding: 18px 6%;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .main-header h1 {
+            color: #0f766e;
+            font-size: 22px;
+        }
+
+        .main-header nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .main-header nav a {
+            color: #64748b;
+        }
+
+        .main-header nav a.active {
+            color: #0f766e;
+            font-weight: bold;
+        }
+
+        .main-content {
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+        }
+
+        .main-content h2 {
+            margin-bottom: 25px;
+            color: #0f766e;
+        }
+
+        .add-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .add-form label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        .add-form input,
+        .add-form textarea,
+        .add-form select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .image-upload-box {
+            padding: 20px;
+            background: #f0fdfa;
+            border: 2px dashed #0f766e;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .image-upload-box input {
+            background: white;
+            margin-top: 12px;
+        }
+
+        #image-preview {
+            display: none;
+            width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            margin-top: 15px;
+            border-radius: 10px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #0f766e;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #form-message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .main-content {
+                margin: 20px 12px;
+                padding: 20px 15px;
+            }
+
+            .main-header .container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
     <header class="main-header">
         <div class="container">
             <h1>منصة الإعلانات RAADI</h1>
+
             <nav>
                 <a href="index.html">الرئيسية</a>
                 <a href="add-listing.html" class="active">نشر إعلان جديد</a>
@@ -19,63 +150,233 @@
     </header>
 
     <main class="container main-content">
+
         <h2>إضافة إعلان جديد</h2>
+
         <form id="add-listing-form" class="add-form">
+
             <div class="form-group">
                 <label for="title">عنوان الإعلان</label>
                 <input type="text" id="title" required>
             </div>
+
             <div class="form-group">
                 <label for="description">التفاصيل والوصف</label>
                 <textarea id="description" rows="4" required></textarea>
             </div>
+
             <div class="form-group">
                 <label for="price">السعر ($)</label>
-                <input type="number" id="price">
+                <input type="number" id="price" min="0" step="any">
             </div>
+
             <div class="form-group">
                 <label for="city">المدينة</label>
                 <input type="text" id="city" required>
             </div>
+
             <div class="form-group">
                 <label for="category">التصنيف</label>
-                <select id="category">
+
+                <select id="category" required>
                     <option value="real-estate">عقارات</option>
                     <option value="vehicles">مركبات</option>
                     <option value="electronics">إلكترونيات</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label for="image_url">رابط الصورة</label>
-                <input type="url" id="image_url" placeholder="https://...">
+                <label for="listing-image">صورة الإعلان</label>
+
+                <div class="image-upload-box">
+                    <p>اختر صورة الإعلان من هاتفك</p>
+                    <p style="font-size:12px;color:#64748b">
+                        JPG أو PNG أو WEBP — الحد الأقصى 5 ميغابايت
+                    </p>
+
+                    <input
+                        type="file"
+                        id="listing-image"
+                        accept="image/jpeg,image/png,image/webp"
+                    >
+
+                    <img id="image-preview" alt="معاينة صورة الإعلان">
+                </div>
             </div>
-            <button type="submit" class="btn-submit">نشر الإعلان</button>
+
+            <button type="submit" class="btn-submit">
+                نشر الإعلان
+            </button>
+
+            <p id="form-message"></p>
+
         </form>
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
+
     <script>
-        document.getElementById('add-listing-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-            const price = parseFloat(document.getElementById('price').value) || 0;
-            const city = document.getElementById('city').value;
-            const category = document.getElementById('category').value;
-            const image_url = document.getElementById('image_url').value;
+        "use strict";
 
-            const { data, error } = await raadiDB
-                .from('listings')
-                .insert([{ title, description, price, city, category, image_url, status: 'pending' }]);
+        const form = document.getElementById("add-listing-form");
+        const imageInput = document.getElementById("listing-image");
+        const preview = document.getElementById("image-preview");
+        const message = document.getElementById("form-message");
+        const submitButton = form.querySelector('button[type="submit"]');
 
-            if (error) {
-                alert('حدث خطأ أثناء الإرسال: ' + error.message);
-            } else {
-                alert('تم إرسال إعلانك بنجاح وهو بانتظار الموافقة!');
-                window.location.href = 'index.html';
+        const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+        const STORAGE_BUCKET = "listing-images";
+
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ];
+
+        imageInput.addEventListener("change", () => {
+            const file = imageInput.files[0];
+
+            preview.style.display = "none";
+            preview.removeAttribute("src");
+
+            if (!file) return;
+
+            if (!allowedTypes.includes(file.type)) {
+                alert("يرجى اختيار صورة بصيغة JPG أو PNG أو WEBP.");
+                imageInput.value = "";
+                return;
+            }
+
+            if (file.size > MAX_IMAGE_SIZE) {
+                alert("حجم الصورة أكبر من 5 ميغابايت.");
+                imageInput.value = "";
+                return;
+            }
+
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+        });
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const title = document.getElementById("title").value.trim();
+            const description = document.getElementById("description").value.trim();
+            const priceValue = document.getElementById("price").value;
+            const price = priceValue === "" ? 0 : Number(priceValue);
+            const city = document.getElementById("city").value.trim();
+            const category = document.getElementById("category").value;
+            const imageFile = imageInput.files[0];
+
+            if (!title || !description || !city) {
+                alert("يرجى إكمال الحقول المطلوبة.");
+                return;
+            }
+
+            if (!Number.isFinite(price) || price < 0) {
+                alert("يرجى إدخال سعر صحيح.");
+                return;
+            }
+
+            if (imageFile) {
+                if (!allowedTypes.includes(imageFile.type)) {
+                    alert("نوع الصورة غير مدعوم.");
+                    return;
+                }
+
+                if (imageFile.size > MAX_IMAGE_SIZE) {
+                    alert("حجم الصورة أكبر من 5 ميغابايت.");
+                    return;
+                }
+            }
+
+            submitButton.disabled = true;
+            message.style.color = "#0f766e";
+            message.textContent = "جاري تجهيز الإعلان...";
+
+            let image_url = null;
+
+            try {
+                if (imageFile) {
+                    message.textContent = "جاري رفع الصورة...";
+
+                    const extension = imageFile.type === "image/jpeg"
+                        ? "jpg"
+                        : imageFile.type.split("/")[1];
+
+                    const filePath =
+                        Date.now() + "-" +
+                        Math.random().toString(36).slice(2) +
+                        "." + extension;
+
+                    const { error: uploadError } = await raadiDB
+                        .storage
+                        .from(STORAGE_BUCKET)
+                        .upload(filePath, imageFile, {
+                            cacheControl: "3600",
+                            upsert: false,
+                            contentType: imageFile.type
+                        });
+
+                    if (uploadError) {
+                        throw new Error(
+                            "تعذر رفع الصورة: " + uploadError.message
+                        );
+                    }
+
+                    const { data: publicData } = raadiDB
+                        .storage
+                        .from(STORAGE_BUCKET)
+                        .getPublicUrl(filePath);
+
+                    image_url = publicData.publicUrl;
+                }
+
+                message.textContent = "جاري إرسال الإعلان...";
+
+                const { error } = await raadiDB
+                    .from("listings")
+                    .insert([{
+                        title,
+                        description,
+                        price,
+                        city,
+                        category,
+                        image_url,
+                        status: "pending"
+                    }]);
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                message.style.color = "#15803d";
+                message.textContent =
+                    "تم إرسال إعلانك بنجاح، وهو الآن بانتظار الموافقة.";
+
+                form.reset();
+
+                preview.style.display = "none";
+                preview.removeAttribute("src");
+
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 2000);
+
+            } catch (error) {
+                console.error("RAADI UPLOAD ERROR:", error);
+
+                message.style.color = "#dc2626";
+                message.textContent =
+                    "حدث خطأ: " + error.message;
+
+            } finally {
+                submitButton.disabled = false;
             }
         });
     </script>
+
 </body>
 </html>

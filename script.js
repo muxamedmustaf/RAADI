@@ -11,24 +11,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearBtn = document.querySelector("#clear-search");
 
   if (!listingsGrid) return;
-
   let allListings = [];
 
   async function fetchListings() {
-    listingsGrid.innerHTML = "<p style='text-align:center; width:100%;'>جارٍ تحميل الإعلانات...</p>";
-    
-    const { data, error } = await raadiDB
-      .from("listings")
-      .select("*")
-      .in("status", ["approved", "sold"])
-      .order("created_at", { ascending: false });
+    listingsGrid.innerHTML = "<p style='text-align:center; width:100%;'>جارٍ التحميل...</p>";
+    const { data, error } = await raadiDB.from("listings").select("*").in("status", ["approved", "sold"]).order("created_at", { ascending: false });
 
     if (error) {
-      console.error("خطأ في جلب الإعلانات:", error);
-      listingsGrid.innerHTML = `<p style='text-align:center; color:red; width:100%;'>حدث خطأ: ${error.message}</p>`;
+      listingsGrid.innerHTML = "<p style='color:red; text-align:center;'>خطأ: " + error.message + "</p>";
       return;
     }
-
     allListings = data || [];
     applyFiltersAndSort();
   }
@@ -38,83 +30,65 @@ document.addEventListener("DOMContentLoaded", () => {
     const cityQuery = searchCity.value.trim().toLowerCase();
     const sortValue = sortSelect.value;
 
+    // الفلترة الآمنة
     let filtered = allListings.filter(item => {
-      const matchName = !nameQuery || (item.title && item.title.toLowerCase().includes(nameQuery)) || (item.description && item.description.toLowerCase().includes(nameQuery));
+      const matchName = !nameQuery || (item.title && item.title.toLowerCase().includes(nameQuery));
       const matchCity = !cityQuery || (item.location && item.location.toLowerCase().includes(cityQuery));
       return matchName && matchCity;
     });
 
+    // الترتيب الآمن
     if (sortValue === "price-asc") {
-      filtered.sort((a, b) => a.price - b.price);
+      filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
     } else if (sortValue === "price-desc") {
-      filtered.sort((a, b) => b.price - a.price);
+      filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
     } else {
-      // افتراضياً (الأحدث) - بما في ذلك خيار "الأقرب" مؤقتاً لأنه لا يوجد خرائط بعد
+      // افتراضياً (الأحدث أو الأقرب) نرتب بالأحدث لتجنب انهيار الكود
       filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
 
-    searchMessage.textContent = "";
     renderListings(filtered);
   }
 
   function renderListings(listings) {
     listingsGrid.innerHTML = "";
-
     if (listings.length === 0) {
       emptyState.style.display = "flex";
       return;
     }
-
     emptyState.style.display = "none";
 
     listings.forEach(item => {
-      const isSold = item.status === "sold";
+      // حماية الصور: إذا لم تبدأ بـ http نضع صورة افتراضية
+      const imageSrc = (item.image_url && item.image_url.startsWith("http")) 
+        ? item.image_url 
+        : "https://via.placeholder.com/300x200?text=No+Image";
       
-      // معالجة الصورة: إذا كان الرابط "LL" أو فارغاً، نضع صورة افتراضية
-      let imageSrc = "https://via.placeholder.com/300x200?text=No+Image";
-      if (item.image_url && item.image_url.startsWith("http")) {
-        imageSrc = item.image_url;
-      }
-
-      const dateStr = item.created_at ? new Date(item.created_at).toLocaleDateString("ar-EG") : "غير محدد";
+      const isSold = item.status === "sold";
       
       const card = document.createElement("div");
       card.className = "listing-card";
-      
       card.innerHTML = `
         <div class="listing-image-wrapper">
-          <img src="${imageSrc}" alt="${item.title}" class="listing-image" loading="lazy">
+          <img src="${imageSrc}" class="listing-image" loading="lazy">
           ${isSold ? '<div class="sold-badge">مباع</div>' : ''}
         </div>
         <div class="listing-content">
           <h3 class="listing-title">${item.title || 'بدون عنوان'}</h3>
           <p class="listing-price">$${item.price || 0}</p>
           <p class="listing-location">📍 ${item.location || 'غير محدد'}</p>
-          <p class="listing-date">📅 ${dateStr}</p>
-          <a href="https://wa.me/${item.whatsapp}?text=مرحباً، أنا مهتم بإعلانك: ${item.title}" 
-             target="_blank" class="whatsapp-btn ${isSold ? 'disabled' : ''}">
+          <a href="https://wa.me/${item.whatsapp}?text=مرحبا، مهتم بإعلانك: ${item.title}" target="_blank" class="whatsapp-btn ${isSold ? 'disabled' : ''}">
             ${isSold ? 'تم البيع' : 'تواصل عبر واتساب'}
           </a>
         </div>
       `;
-      
       listingsGrid.appendChild(card);
     });
   }
 
-  searchForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    applyFiltersAndSort();
-  });
-
-  sortSelect.addEventListener("change", () => {
-    applyFiltersAndSort();
-  });
-
-  clearBtn.addEventListener("click", () => {
-    searchForm.reset();
-    applyFiltersAndSort();
-  });
+  searchForm.addEventListener("submit", (e) => { e.preventDefault(); applyFiltersAndSort(); });
+  sortSelect.addEventListener("change", () => applyFiltersAndSort());
+  clearBtn.addEventListener("click", () => { searchForm.reset(); applyFiltersAndSort(); });
 
   fetchListings();
 });

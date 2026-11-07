@@ -1,4 +1,3 @@
-
 "use strict";
 
 function escapeHTML(value) {
@@ -25,14 +24,16 @@ async function fetchListings(filters = {}) {
             .eq("status", "approved")
             .order("created_at", { ascending: false });
 
+        console.log("RAADI TOTAL:", data?.length);
+        console.log("RAADI DATA:", data);
+        console.log("RAADI ERROR:", error);
+
         if (error) {
             console.error("SUPABASE ERROR:", error);
             container.innerHTML =
                 `<p class="listings-error">خطأ قاعدة البيانات: ${escapeHTML(error.message)}</p>`;
             return;
         }
-
-        console.log("RAADI LISTINGS:", data);
 
         let listings = data || [];
 

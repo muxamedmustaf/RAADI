@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>تفاصيل الإعلان | RAADI</title>
 
     <style>
@@ -13,7 +12,7 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: Tahoma, Arial, sans-serif;
             background: #f4f6f8;
             color: #222;
         }
@@ -21,13 +20,12 @@
         header {
             background: #087b55;
             color: white;
-            padding: 18px 15px;
+            padding: 18px;
             text-align: center;
         }
 
         header h1 {
             margin: 0;
-            font-size: 25px;
         }
 
         .page {
@@ -38,17 +36,82 @@
 
         .listing-card {
             background: white;
-            border-radius: 14px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 3px 15px #00000012;
+        }
+
+        .gallery {
+            position: relative;
+            background: #e9eef1;
+            padding: 12px;
+        }
+
+        .main-image-box {
+            height: 430px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e9eef1;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         #listing-image {
             width: 100%;
-            max-height: 450px;
+            height: 100%;
             object-fit: contain;
-            background: #eee;
-            display: block;
+            cursor: zoom-in;
+        }
+
+        .gallery-button {
+            position: absolute;
+            top: 45%;
+            width: 42px;
+            height: 42px;
+            border: none;
+            border-radius: 50%;
+            background: #ffffffdd;
+            color: #087b55;
+            font-size: 25px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        #previous-image {
+            right: 20px;
+        }
+
+        #next-image {
+            left: 20px;
+        }
+
+        .gallery-count {
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            padding-top: 8px;
+        }
+
+        .thumbnails {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 12px 0 3px;
+        }
+
+        .thumbnail {
+            width: 75px;
+            height: 65px;
+            flex: 0 0 75px;
+            object-fit: cover;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .thumbnail.active {
+            border-color: #087b55;
         }
 
         .listing-content {
@@ -93,14 +156,69 @@
             border-radius: 8px;
         }
 
-        #listing-details-container {
-            text-align: right;
+        /* نافذة تكبير الصورة */
+
+        .image-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000000f2;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+
+        .image-modal.open {
+            display: flex;
+        }
+
+        #modal-image {
+            max-width: 95%;
+            max-height: 85%;
+            object-fit: contain;
+            transform-origin: center;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: white;
+            background: transparent;
+            border: none;
+            font-size: 38px;
+            cursor: pointer;
+        }
+
+        .modal-controls {
+            position: absolute;
+            bottom: 25px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-controls button {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            font-size: 23px;
+            background: white;
+            color: #087b55;
+            cursor: pointer;
         }
 
         @media (max-width: 600px) {
             .page {
                 margin: 12px auto;
                 padding: 10px;
+            }
+
+            .main-image-box {
+                height: 300px;
             }
 
             #listing-title {
@@ -116,57 +234,76 @@
 
 <body>
 
-    <header>
-        <h1>RAADI</h1>
-        <p>تفاصيل الإعلان</p>
-    </header>
+<header>
+    <h1>RAADI</h1>
+    <p>تفاصيل الإعلان</p>
+</header>
 
-    <main class="page">
+<main class="page">
 
-        <div id="listing-details-container">
+    <div id="listing-details-container">
 
-            <div class="listing-card">
+        <div class="listing-card">
 
-                <img
-                    id="listing-image"
-                    src=""
-                    alt="صورة الإعلان"
-                    onerror="this.style.display='none'"
-                >
+            <div class="gallery">
 
-                <div class="listing-content">
-
-                    <h2 id="listing-title">
-                        جاري تحميل الإعلان...
-                    </h2>
-
-                    <div id="listing-price"></div>
-
-                    <div class="listing-city">
-                        المدينة:
-                        <span id="listing-city"></span>
-                    </div>
-
-                    <h3 class="description-title">
-                        وصف الإعلان
-                    </h3>
-
-                    <p id="listing-description"></p>
-
-                    <a href="index.html" class="back-button">
-                        العودة إلى الصفحة الرئيسية
-                    </a>
-
+                <div class="main-image-box">
+                    <img id="listing-image" src="" alt="صورة الإعلان">
                 </div>
+
+                <button id="previous-image" class="gallery-button" type="button">›</button>
+                <button id="next-image" class="gallery-button" type="button">‹</button>
+
+                <div id="gallery-count" class="gallery-count"></div>
+
+                <div id="listing-thumbnails" class="thumbnails"></div>
+
+            </div>
+
+            <div class="listing-content">
+
+                <h2 id="listing-title">جاري تحميل الإعلان...</h2>
+
+                <div id="listing-price"></div>
+
+                <div class="listing-city">
+                    المدينة: <span id="listing-city"></span>
+                </div>
+
+                <h3 class="description-title">وصف الإعلان</h3>
+
+                <p id="listing-description"></p>
+
+                <a href="index.html" class="back-button">
+                    العودة إلى الصفحة الرئيسية
+                </a>
+
             </div>
 
         </div>
 
-    </main>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
-    <script src="listing.js"></script>
+</main>
+
+<!-- نافذة عرض الصورة الكبيرة -->
+
+<div id="image-modal" class="image-modal">
+
+    <button id="modal-close" class="modal-close" type="button">×</button>
+
+    <img id="modal-image" alt="الصورة المكبرة">
+
+    <div class="modal-controls">
+        <button id="zoom-out" type="button">−</button>
+        <button id="zoom-in" type="button">+</button>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="listing.js"></script>
 
 </body>
 </html>
